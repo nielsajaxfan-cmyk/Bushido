@@ -1,0 +1,19 @@
+{
+  "name": "武士道 · Bushido",
+  "short_name": "Bushido",
+  "description": "Dagelijkse Bushido deugden — leef met eer, moed en wijsheid.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0908",
+  "theme_color": "#0a0908",
+  "lang": "nl",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

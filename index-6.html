@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>武士道 · Bushido</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a0908">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bushido">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+
+<!-- Description -->
+<meta name="description" content="Dagelijkse Bushido deugden — leef met eer, moed en wijsheid.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Noto+Serif+JP:wght@200;300;400&family=Cinzel:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0908;
+    --off-black: #111010;
+    --surface: #161514;
+    --surface2: #1d1b1a;
+    --border: rgba(255,255,255,0.07);
+    --border-strong: rgba(255,255,255,0.12);
+    --red: #8b1a1a;
+    --red-bright: #b02020;
+    --red-glow: rgba(139,26,26,0.3);
+    --white: #f0ede8;
+    --white-dim: rgba(240,237,232,0.7);
+    --white-muted: rgba(240,237,232,0.4);
+    --white-faint: rgba(240,237,232,0.12);
+    --gold: #8a7040;
+    --gold-dim: rgba(138,112,64,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    overflow-x: hidden;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  /* ─── NOISE TEXTURE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ─── SEIGAIHA PATTERN (top decoration) ─── */
+  .pattern-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--red), var(--red-bright), var(--red), transparent);
+    z-index: 100;
+  }
+
+  /* ─── LAYOUT ─── */
+  .app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 40px;
+    position: relative;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 52px 28px 20px;
+    position: relative;
+  }
+
+  .logo-block {}
+  .logo-kanji {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 11px;
+    font-weight: 200;
+    letter-spacing: 0.3em;
+    color: var(--red-bright);
+    display: block;
+    margin-bottom: 4px;
+  }
+  .logo-text {
+    font-family: 'Cinzel', serif;
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    color: var(--white);
+  }
+
+  .streak-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .streak-label {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--white-muted);
+    margin-bottom: 2px;
+  }
+  .streak-count {
+    font-family: 'Cinzel', serif;
+    font-size: 22px;
+    color: var(--red-bright);
+    line-height: 1;
+  }
+  .streak-suffix {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--white-muted);
+    text-align: right;
+  }
+
+  /* ─── DATE BAR ─── */
+  .date-bar {
+    padding: 0 28px 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .date-line {
+    height: 1px;
+    flex: 1;
+    background: var(--border);
+  }
+  .date-text {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--white-muted);
+    text-transform: uppercase;
+    font-weight: 300;
+    white-space: nowrap;
+  }
+
+  /* ─── VIRTUE CARD ─── */
+  .card {
+    margin: 0 20px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-top: 1px solid rgba(176,32,32,0.3);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    animation: fadeUp 0.6s ease both;
+    box-shadow: 0 0 0 0 transparent, inset 0 1px 0 rgba(176,32,32,0.15);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Subtle seigaiha SVG watermark */
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='15' cy='30' r='15' fill='none' stroke='white' stroke-width='1'/%3E%3Ccircle cx='45' cy='30' r='15' fill='none' stroke='white' stroke-width='1'/%3E%3Ccircle cx='30' cy='5' r='15' fill='none' stroke='white' stroke-width='1'/%3E%3Ccircle cx='0' cy='5' r='15' fill='none' stroke='white' stroke-width='1'/%3E%3Ccircle cx='60' cy='5' r='15' fill='none' stroke='white' stroke-width='1'/%3E%3Ccircle cx='30' cy='55' r='15' fill='none' stroke='white' stroke-width='1'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    pointer-events: none;
+  }
+
+  /* ─── CARD HERO ─── */
+  .card-hero {
+    padding: 36px 32px 28px;
+    text-align: center;
+    position: relative;
+    background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(139,26,26,0.08) 0%, transparent 70%);
+  }
+
+  .virtue-number {
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--red-bright);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .virtue-kanji {
+    font-family: 'Noto Serif JP', serif;
+    font-weight: 200;
+    font-size: 72px;
+    line-height: 1;
+    color: rgba(240,237,232,0.28);
+    display: block;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 80px var(--red-glow), 0 0 120px rgba(139,26,26,0.2);
+    transition: color 0.4s;
+  }
+
+  .virtue-name {
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .virtue-romaji {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 12px;
+    font-weight: 200;
+    letter-spacing: 0.4em;
+    color: var(--red-bright);
+    text-transform: uppercase;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+    margin: 0 24px;
+  }
+
+  /* ─── CARD SECTIONS ─── */
+  .card-section {
+    padding: 24px 28px;
+  }
+
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 0.45em;
+    text-transform: uppercase;
+    color: var(--red-bright);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-text {
+    font-size: 17px;
+    line-height: 1.75;
+    font-weight: 300;
+    color: var(--white-dim);
+    font-style: italic;
+  }
+
+  /* ─── EXAMPLES ─── */
+  .examples-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .example-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .example-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--red-bright);
+    margin-top: 9px;
+    flex-shrink: 0;
+  }
+  .example-text {
+    font-size: 15.5px;
+    line-height: 1.65;
+    font-weight: 300;
+    color: var(--white-dim);
+  }
+
+  /* ─── APPLY TODAY ─── */
+  .apply-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .apply-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--red);
+    border-radius: 8px;
+    padding: 13px 16px;
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 300;
+    color: var(--white-dim);
+  }
+
+  /* ─── QUOTE ─── */
+  .quote-section {
+    padding: 24px 28px 28px;
+    text-align: center;
+  }
+  .quote-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px;
+    line-height: 0.5;
+    color: var(--red);
+    opacity: 0.5;
+    display: block;
+    margin-bottom: 12px;
+  }
+  .quote-text {
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--white-muted);
+  }
+  .quote-source {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    margin-top: 10px;
+    display: block;
+    text-transform: uppercase;
+  }
+
+  /* ─── COMPLETE BUTTON ─── */
+  .complete-section {
+    padding: 0 28px 4px;
+  }
+  .complete-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border-strong);
+    background: transparent;
+    color: var(--white-dim);
+    font-family: 'Cinzel', serif;
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .complete-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+    z-index: 0;
+  }
+  .complete-btn span { position: relative; z-index: 1; }
+  .complete-btn:hover::before,
+  .complete-btn.done::before { transform: scaleX(1); }
+  .complete-btn.done {
+    color: var(--white);
+    border-color: var(--red);
+  }
+
+  /* ─── NAV ─── */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 28px 0;
+  }
+
+  .nav-btn {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--white-dim);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover {
+    background: var(--surface2);
+    border-color: var(--red);
+    color: var(--white);
+  }
+  .nav-btn:active { transform: scale(0.93); }
+
+  .nav-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .nav-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--border-strong);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-dot.active {
+    background: var(--red-bright);
+    transform: scale(1.3);
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 32px 28px 0;
+    text-align: center;
+  }
+  .footer-text {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 20px;
+    font-weight: 200;
+    color: var(--white-faint);
+    letter-spacing: 0.1em;
+  }
+
+  /* ─── TRANSITION ANIM ─── */
+  .card.slide-out-left  { animation: slideOutLeft  0.3s ease both; }
+  .card.slide-out-right { animation: slideOutRight 0.3s ease both; }
+  .card.slide-in-left   { animation: slideInLeft   0.35s ease both; }
+  .card.slide-in-right  { animation: slideInRight  0.35s ease both; }
+
+  @keyframes slideOutLeft  { to { opacity: 0; transform: translateX(-40px); } }
+  @keyframes slideOutRight { to { opacity: 0; transform: translateX(40px); } }
+  @keyframes slideInLeft   { from { opacity: 0; transform: translateX(40px); } }
+  @keyframes slideInRight  { from { opacity: 0; transform: translateX(-40px); } }
+
+  /* ─── TOUCH SWIPE HINT ─── */
+  .swipe-hint {
+    text-align: center;
+    padding: 20px 0 0;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--white-faint);
+    text-transform: uppercase;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (min-width: 480px) {
+    .card-hero { padding: 44px 40px 32px; }
+    .virtue-kanji { font-size: 80px; }
+    .virtue-name { font-size: 36px; }
+  }
+
+  /* ─── ADVISOR SECTION ─── */
+  .advisor-section {
+    margin: 40px 20px 0;
+  }
+
+  .advisor-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding: 0 4px;
+  }
+
+  .advisor-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid rgba(176,32,32,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 16px;
+    color: var(--red-bright);
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(139,26,26,0.15);
+  }
+
+  .advisor-title-block {}
+  .advisor-title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    color: var(--white);
+  }
+  .advisor-subtitle {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--white-muted);
+    margin-top: 2px;
+  }
+
+  .advisor-card {
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-top: 1px solid rgba(176,32,32,0.25);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  /* Messages area */
+  .advisor-messages {
+    min-height: 80px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
+  }
+  .advisor-messages::-webkit-scrollbar { width: 3px; }
+  .advisor-messages::-webkit-scrollbar-track { background: transparent; }
+  .advisor-messages::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+  .msg-empty {
+    text-align: center;
+    padding: 24px 0 8px;
+  }
+  .msg-empty-kanji {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 28px;
+    color: var(--white-faint);
+    display: block;
+    margin-bottom: 10px;
+  }
+  .msg-empty-text {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--white-muted);
+    font-style: italic;
+  }
+
+  /* User bubble */
+  .msg-user {
+    align-self: flex-end;
+    max-width: 85%;
+    background: var(--surface2);
+    border: 1px solid var(--border-strong);
+    border-radius: 14px 14px 4px 14px;
+    padding: 11px 15px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--white-dim);
+    animation: fadeUp 0.3s ease both;
+  }
+
+  /* AI response bubble */
+  .msg-ai {
+    align-self: flex-start;
+    max-width: 95%;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .msg-ai-label {
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    color: var(--red-bright);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .msg-ai-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+    max-width: 40px;
+  }
+
+  .msg-ai-body {
+    background: linear-gradient(135deg, var(--surface2), var(--surface));
+    border: 1px solid var(--border-strong);
+    border-left: 2px solid var(--red);
+    border-radius: 4px 14px 14px 14px;
+    padding: 14px 16px;
+  }
+
+  .msg-ai-body p {
+    font-size: 15px;
+    line-height: 1.72;
+    color: var(--white-dim);
+    margin-bottom: 10px;
+  }
+  .msg-ai-body p:last-child { margin-bottom: 0; }
+
+  /* Virtue tags in response */
+  .virtue-tag {
+    display: inline-block;
+    background: rgba(139,26,26,0.15);
+    border: 1px solid rgba(176,32,32,0.3);
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--red-bright);
+    font-family: 'Cinzel', serif;
+    margin: 0 2px;
+  }
+
+  /* Thinking indicator */
+  .msg-thinking {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--red);
+    border-radius: 4px 14px 14px 14px;
+    animation: fadeUp 0.3s ease both;
+  }
+  .thinking-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--red-bright);
+    opacity: 0.4;
+    animation: thinkPulse 1.2s ease infinite;
+  }
+  .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes thinkPulse {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* Divider */
+  .advisor-input-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+    margin: 0 16px;
+  }
+
+  /* Input row */
+  .advisor-input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 14px 16px;
+  }
+
+  .advisor-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--white);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.5;
+    resize: none;
+    min-height: 28px;
+    max-height: 100px;
+    padding: 2px 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .advisor-textarea::placeholder {
+    color: var(--white-muted);
+    font-style: italic;
+  }
+  .advisor-textarea::-webkit-scrollbar { display: none; }
+
+  .advisor-send-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--red);
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    color: var(--white);
+    font-size: 15px;
+    position: relative;
+    overflow: hidden;
+  }
+  .advisor-send-btn:hover { background: var(--red-bright); transform: scale(1.05); }
+  .advisor-send-btn:active { transform: scale(0.95); }
+  .advisor-send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* Suggested prompts */
+  .advisor-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 22px 18px;
+  }
+  .suggestion-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border-strong);
+    border-radius: 20px;
+    padding: 6px 13px;
+    font-size: 12px;
+    color: var(--white-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    letter-spacing: 0.02em;
+  }
+  .suggestion-chip:hover {
+    border-color: rgba(176,32,32,0.4);
+    color: var(--white-dim);
+    background: rgba(139,26,26,0.08);
+  }
+</style>
+</head>
+<body>
+
+<div class="pattern-bar"></div>
+
+<div class="app">
+  <header>
+    <div class="logo-block">
+      <span class="logo-kanji">武士道</span>
+      <span class="logo-text">BUSHIDO</span>
+    </div>
+    <div class="streak-block">
+      <span class="streak-label">Reeks</span>
+      <span class="streak-count" id="streakCount">0</span>
+      <span class="streak-suffix">dagen</span>
+    </div>
+  </header>
+
+  <div class="date-bar">
+    <div class="date-line"></div>
+    <div class="date-text" id="dateText"></div>
+    <div class="date-line"></div>
+  </div>
+
+  <div class="card" id="virtueCard">
+    <div class="card-hero">
+      <span class="virtue-number" id="virtueNumber"></span>
+      <span class="virtue-kanji" id="virtueKanji"></span>
+      <div class="virtue-name" id="virtueName"></div>
+      <div class="virtue-romaji" id="virtueRomaji"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card-section">
+      <div class="section-label">Betekenis</div>
+      <p class="section-text" id="virtueMeaning"></p>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card-section">
+      <div class="section-label">In het Dagelijks Leven</div>
+      <ul class="examples-list" id="virtueExamples"></ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card-section">
+      <div class="section-label">Pas het Toe Vandaag</div>
+      <ul class="apply-list" id="virtueApply"></ul>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="quote-section">
+      <span class="quote-mark">"</span>
+      <p class="quote-text" id="virtueQuote"></p>
+      <span class="quote-source" id="virtueQuoteSource"></span>
+    </div>
+  </div>
+
+  <div class="complete-section" style="margin: 20px 20px 0;">
+    <button class="complete-btn" id="completeBtn" onclick="toggleComplete()">
+      <span id="completeBtnText">Markeer als Nageleefd Vandaag</span>
+    </button>
+  </div>
+
+  <div class="nav">
+    <button class="nav-btn" onclick="navigate(-1)" aria-label="Vorige">&#8592;</button>
+    <div class="nav-dots" id="navDots"></div>
+    <button class="nav-btn" onclick="navigate(1)" aria-label="Volgende">&#8594;</button>
+  </div>
+
+  <div class="swipe-hint">一日一善 · één deugd, één dag</div>
+
+  <!-- ─── ADVISOR SECTION ─── -->
+  <div class="advisor-section">
+    <div class="advisor-header">
+      <div class="advisor-icon">侍</div>
+      <div class="advisor-title-block">
+        <div class="advisor-title">De Samoerai Adviseur</div>
+        <div class="advisor-subtitle">Stel een vraag over je dag of uitdaging</div>
+      </div>
+    </div>
+
+    <div class="advisor-card">
+      <div class="advisor-messages" id="advisorMessages">
+        <div class="msg-empty" id="advisorEmpty">
+          <span class="msg-empty-kanji">問</span>
+          <p class="msg-empty-text">Beschrijf je dag, een dilemma,<br>of iets dat je bezighoudt.<br>De adviseur antwoordt vanuit alle zeven deugden.</p>
+        </div>
+      </div>
+
+      <div class="advisor-suggestions" id="advisorSuggestions">
+        <span class="suggestion-chip" onclick="useSuggestion(this)">Ik heb een moeilijk gesprek vandaag</span>
+        <span class="suggestion-chip" onclick="useSuggestion(this)">Ik twijfel over een belangrijke beslissing</span>
+        <span class="suggestion-chip" onclick="useSuggestion(this)">Ik voel me overweldigd door mijn takenlijst</span>
+        <span class="suggestion-chip" onclick="useSuggestion(this)">Hoe ga ik om met iemand die mij onrecht aandoet?</span>
+      </div>
+
+      <div class="advisor-input-divider"></div>
+
+      <div class="advisor-input-row">
+        <textarea
+          class="advisor-textarea"
+          id="advisorInput"
+          placeholder="Beschrijf je situatie..."
+          rows="1"
+          onInput="autoResize(this)"
+          onKeydown="handleAdvisorKey(event)"
+        ></textarea>
+        <button class="advisor-send-btn" id="advisorSendBtn" onclick="sendAdvisorMessage()" aria-label="Verstuur">
+          &#8593;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-text">一日一善</div>
+  </footer>
+</div>
+
+<script>
+const VIRTUES = [
+  {
+    name: "Rechtvaardigheid",
+    romaji: "GI",
+    kanji: "義",
+    number: "I",
+    meaning: "Rechtvaardigheid is het bot dat karakter zijn stevigheid geeft. Zonder haar wordt talent sluwe handigheid, en kennis lege woorden. Het is de onwankelbare toewijding aan wat juist is — niet wat gemakkelijk, winstgevend of populair is.",
+    examples: [
+      "Een manager die weigert kwartaalcijfers te vervalsen ondanks druk van bovenaf, wetend wat het zijn carrière kost.",
+      "Een portemonnee vol geld terugbrengen naar de eigenaar zonder aarzeling, terwijl niemand kijkt.",
+      "Een fout toegeven in een vergadering in plaats van een collega de schuld te laten dragen."
+    ],
+    apply: [
+      "Neem vandaag één beslissing puur op basis van wat juist is — niet wat jou voordeel oplevert.",
+      "Merk je dat je een omweg rationaliseer? Pauzeer en kies het moeilijkere, eerlijke pad.",
+      "Spreek een waarheid uit die je al uitstelt, ook als het moment oncomfortabel voelt."
+    ],
+    quote: "De kracht om juiste beslissingen te nemen komt niet uit het moment van crisis, maar uit de dagelijkse gewoonte om in kleine dingen correct te kiezen.",
+    quoteSource: "Bushido Traditie"
+  },
+  {
+    name: "Moed",
+    romaji: "YU",
+    kanji: "勇",
+    number: "II",
+    meaning: "Moed is niet de afwezigheid van angst, maar de beheersing ervan. De samoerai zocht gevaar niet roekeloos op — hij cultiveerde een stille onverschrokkenheid geworteld in overtuiging. Juist handelen ondanks de gevolgen is de ware vorm van dapperheid.",
+    examples: [
+      "Een ingenieur die een veiligheidsgebrek in een product aankaart, ook als hem gezegd wordt zijn mond te houden.",
+      "Iemand die een comfortabele maar liefdeloze relatie beëindigt en groei boven zekerheid kiest.",
+      "Opstaan tegen een groepsbeslissing wanneer je weet dat de groep ongelijk heeft."
+    ],
+    apply: [
+      "Doe vandaag één ding dat je een beetje angst inboezemt — een gesprek, een beslissing, een begin.",
+      "Merk op waar comfort je klein houdt, en zet één bewuste stap voorbij die grens.",
+      "Vervang één 'ik doe het later' door actie. Angst gedijt bij uitstel."
+    ],
+    quote: "Moed is doen wat je bang voor bent. Er kan geen moed zijn tenzij je bang bent.",
+    quoteSource: "Eddie Rickenbacker"
+  },
+  {
+    name: "Welwillendheid",
+    romaji: "JIN",
+    kanji: "仁",
+    number: "III",
+    meaning: "Welwillendheid is het warme hart onder het pantser van de krijger. Macht zonder mededogen is tirannie; kracht zonder genade, wreedheid. De hoogste deugd is liefde voor anderen te cultiveren — hun lijden als het jouwe te voelen en daar naar te handelen.",
+    examples: [
+      "Een leidinggevende die de tijd neemt te begrijpen waarom een teamlid minder presteert, vóór hij consequenties trekt.",
+      "Je stoel, je tijd of je comfort opgeven zonder erkenning te verwachten.",
+      "Iemand jonger begeleiden met oprechte betrokkenheid bij zijn groei, niet bij jouw reputatie."
+    ],
+    apply: [
+      "Verricht vandaag één daad van vriendelijkheid zonder enige verwachting van terugkeer of erkenning.",
+      "Luister vandaag volledig naar iemand — geen onderbrekingen, geen advies tenzij gevraagd.",
+      "Neem contact op met iemand in je leven die stil is geworden. Wees aanwezig, niet performatief."
+    ],
+    quote: "De maatstaf van een mens is wat hij doet met macht wanneer de prijs van vriendelijkheid volledig voor zijn eigen rekening komt.",
+    quoteSource: "Oud Gezegde"
+  },
+  {
+    name: "Respect",
+    romaji: "REI",
+    kanji: "礼",
+    number: "IV",
+    meaning: "Respect is niet louter beleefdheid — het is de uiterlijke uitdrukking van een innerlijke erkenning van waarde. De samoerai boog niet uit zwakte, maar vanuit het besef dat elk mens waardigheid draagt. Respect tonen is het heilige in de ander erkennen.",
+    examples: [
+      "Je telefoon volledig wegleggen wanneer iemand met je spreekt, als teken dat dit moment bij hem hoort.",
+      "Het oneens zijn met iemands idee terwijl je zijn recht respecteert het te koesteren.",
+      "Even hoffelijk zijn tegenover een ober als tegenover een directeur."
+    ],
+    apply: [
+      "Geef iemand vandaag je volledige, onverdeelde aandacht tijdens een gesprek.",
+      "Merk één gewoonte van afwijzing op — onderbreken, oogopslag, half luisteren — en laat het bewust los.",
+      "Begroet de mensen die je dagelijks ziet — de schoonmaker, de barista — alsof ze ertoe doen. Omdat ze dat doen."
+    ],
+    quote: "Respect zit in hoe we mensen behandelen, niet in wie we behandelen. De test is altijd de persoon die niets voor jou kan doen.",
+    quoteSource: "Bushido Traditie"
+  },
+  {
+    name: "Oprechtheid",
+    romaji: "MAKOTO",
+    kanji: "誠",
+    number: "V",
+    meaning: "Makoto — oprechtheid en eerlijkheid — is de deugd die alle andere deugden reëel maakt. Zonder haar wordt moed een optreden, welwillendheid hol, en eer een lege titel. De oprechte mens scheidt zijn woorden niet van zijn daden, zijn publieke gezicht niet van zijn privéziel.",
+    examples: [
+      "Een klant vertellen dat zijn project een probleem heeft vóórdat hij het zelf ontdekt, zelfs als dat de opdracht kost.",
+      "'Ik weet het niet' zeggen op een moment waarop bluffen makkelijker en veiliger zou zijn.",
+      "Eerlijk zijn tegenover jezelf over een patroon dat je steeds weer goedpraat."
+    ],
+    apply: [
+      "Identificeer één plek waar je een rol speelt in plaats van jezelf te zijn — en laat die rol vandaag vallen.",
+      "Voer vandaag één gesprek waarin je precies zegt wat je bedoelt, met vriendelijkheid maar zonder de waarheid weg te poetsen.",
+      "Merk een zelfbedrog op dat je met je meedraagt. Schrijf het op. Noem het bij de naam."
+    ],
+    quote: "Oprechtheid is het begin en einde van alle dingen. Zonder oprechtheid is er niets.",
+    quoteSource: "Confucius"
+  },
+  {
+    name: "Eer",
+    romaji: "MEIYO",
+    kanji: "名誉",
+    number: "VI",
+    meaning: "Eer is het levende verslag van iemands karakter — niet reputatie, die anderen schrijven, maar het verhaal dat jij schrijft door je keuzes. De samoerai begreep dat hoe je je gedraagt wanneer niemand kijkt, de ware maatstaf is van wie je bent. Eer kan niet worden geschonken of ontnomen; zij kan alleen worden opgebouwd of uitgehold.",
+    examples: [
+      "Toegeven dat je ongelijk had in een discussie na verdere overweging, zelfs dagen later.",
+      "Weigeren deel te nemen aan roddel of reputatieschadende gesprekken op het werk.",
+      "Een belofte aan jezelf nakomen — een toezegging waarvan niemand anders zou weten dat je haar gebroken hebt."
+    ],
+    apply: [
+      "Bekijk een recente beslissing: zou je haar op dezelfde manier nemen als iedereen je redenering kon zien?",
+      "Kom vandaag één belofte aan jezelf na die alleen jij zult kennen.",
+      "Laat één reputatiegedreven gewoonte los — iets dat je doet om er goed uit te zien, in plaats van goed te zijn."
+    ],
+    quote: "Zonder eer zijn daden louter slim. Met eer worden zelfs eenvoudige handelingen diepgaand.",
+    quoteSource: "Yamamoto Tsunetomo"
+  },
+  {
+    name: "Loyaliteit",
+    romaji: "CHUGI",
+    kanji: "忠義",
+    number: "VII",
+    meaning: "Loyaliteit is de volhartende toewijding aan hen die we hebben gekozen naast ons te laten staan. Het is geen blinde gehoorzaamheid, maar trouwe aanwezigheid — juist in moeilijke tijden. Ware loyaliteit betekent soms eerlijk advies boven comfortabele instemming, omdat de loyale dient aan de persoon, niet enkel aan diens stemming.",
+    examples: [
+      "Trouw blijven aan een vriend in moeilijkheden tijdens een periode waarin de vriendschap meer kost dan ze geeft.",
+      "Een ongemakkelijke waarheid uitspreken tegen een collega omdat je zijn groei meer waardeert dan zijn goedkeuring.",
+      "Een langdurige toezegging nakomen wanneer de nieuwigheid is verdwenen en alleen de inspanning rest."
+    ],
+    apply: [
+      "Neem contact op met iemand aan wie je in gedachten loyaal bent geweest maar in daad tekortgeschoten bent.",
+      "Identificeer een toewijding — aan een persoon, een vak, een pad — en vernieuw haar vandaag bewust.",
+      "Vraag jezelf: waar heb ik mijn eigen comfort laten voorgaan boven de mensen die op mij rekenen?"
+    ],
+    quote: "Loyaliteit is geen gevoel. Het is een reeks gekozen handelingen, herhaald totdat ze karakter worden.",
+    quoteSource: "Bushido Traditie"
+  }
+];
+
+// ─── STATE ───
+let state = {
+  currentIndex: getTodayIndex(),
+  completedDays: {},
+  streak: 0,
+  lastCompleted: null
+};
+
+function getTodayIndex() {
+  const epoch = new Date('2024-01-01');
+  const today = new Date();
+  const days = Math.floor((today - epoch) / (1000 * 60 * 60 * 24));
+  return days % VIRTUES.length;
+}
+
+function getTodayKey() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('bushido_state');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state.completedDays = parsed.completedDays || {};
+      state.streak = parsed.streak || 0;
+      state.lastCompleted = parsed.lastCompleted || null;
+    }
+  } catch(e) {}
+  updateStreak();
+}
+
+function saveState() {
+  localStorage.setItem('bushido_state', JSON.stringify({
+    completedDays: state.completedDays,
+    streak: state.streak,
+    lastCompleted: state.lastCompleted
+  }));
+}
+
+function updateStreak() {
+  const today = getTodayKey();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yKey = yesterday.toISOString().split('T')[0];
+
+  if (state.lastCompleted === today) {
+    // streak already correct
+  } else if (state.lastCompleted === yKey) {
+    // yesterday was completed, streak continues if today is done
+  } else if (state.lastCompleted && state.lastCompleted < yKey) {
+    // streak broken
+    state.streak = 0;
+  }
+}
+
+// ─── RENDER ───
+function render(direction) {
+  const v = VIRTUES[state.currentIndex];
+  const card = document.getElementById('virtueCard');
+
+  // Animate out
+  if (direction) {
+    const outClass = direction === 'next' ? 'slide-out-left' : 'slide-out-right';
+    card.classList.add(outClass);
+    setTimeout(() => {
+      card.classList.remove(outClass);
+      populateCard(v);
+      const inClass = direction === 'next' ? 'slide-in-left' : 'slide-in-right';
+      card.classList.add(inClass);
+      setTimeout(() => card.classList.remove(inClass), 350);
+    }, 280);
+  } else {
+    populateCard(v);
+  }
+
+  updateNav();
+  updateComplete();
+  document.getElementById('streakCount').textContent = state.streak;
+}
+
+function populateCard(v) {
+  document.getElementById('virtueNumber').textContent = `Deugd ${v.number} van ${VIRTUES.length}`;
+  document.getElementById('virtueKanji').textContent = v.kanji;
+  document.getElementById('virtueName').textContent = v.name;
+  document.getElementById('virtueRomaji').textContent = v.romaji;
+  document.getElementById('virtueMeaning').textContent = v.meaning;
+
+  const exList = document.getElementById('virtueExamples');
+  exList.innerHTML = v.examples.map(e => `
+    <li class="example-item">
+      <div class="example-dot"></div>
+      <span class="example-text">${e}</span>
+    </li>`).join('');
+
+  const applyList = document.getElementById('virtueApply');
+  applyList.innerHTML = v.apply.map(a => `<li class="apply-item">${a}</li>`).join('');
+
+  document.getElementById('virtueQuote').textContent = v.quote;
+  document.getElementById('virtueQuoteSource').textContent = `— ${v.quoteSource}`;
+}
+
+function updateNav() {
+  const dots = document.getElementById('navDots');
+  dots.innerHTML = VIRTUES.map((_, i) => `
+    <div class="nav-dot ${i === state.currentIndex ? 'active' : ''}" onclick="goTo(${i})"></div>
+  `).join('');
+
+  const today = new Date();
+  const options = { weekday: 'long', month: 'long', day: 'numeric' };
+  document.getElementById('dateText').textContent = today.toLocaleDateString('nl-NL', options);
+}
+
+function updateComplete() {
+  const todayIdx = getTodayIndex();
+  const todayKey = getTodayKey();
+  const btn = document.getElementById('completeBtn');
+  const txt = document.getElementById('completeBtnText');
+
+  if (state.currentIndex === todayIdx && state.completedDays[todayKey]) {
+    btn.classList.add('done');
+    txt.textContent = '✦ Nageleefd';
+  } else if (state.currentIndex === todayIdx) {
+    btn.classList.remove('done');
+    txt.textContent = 'Markeer als Nageleefd Vandaag';
+  } else {
+    btn.classList.remove('done');
+    txt.textContent = state.completedDays[getTodayKey()] ? '✦ Vandaag Nageleefd' : 'Markeer als Nageleefd Vandaag';
+    btn.style.opacity = state.currentIndex !== todayIdx ? '0.5' : '1';
+  }
+  btn.style.opacity = state.currentIndex === todayIdx ? '1' : '0.4';
+}
+
+function toggleComplete() {
+  const todayIdx = getTodayIndex();
+  if (state.currentIndex !== todayIdx) return;
+
+  const todayKey = getTodayKey();
+  if (state.completedDays[todayKey]) return; // already done
+
+  state.completedDays[todayKey] = true;
+  state.lastCompleted = todayKey;
+  state.streak += 1;
+  saveState();
+  updateComplete();
+  document.getElementById('streakCount').textContent = state.streak;
+
+  // Pulse effect
+  const btn = document.getElementById('completeBtn');
+  btn.style.transform = 'scale(0.97)';
+  setTimeout(() => btn.style.transform = '', 200);
+}
+
+function navigate(dir) {
+  const prev = state.currentIndex;
+  state.currentIndex = (state.currentIndex + dir + VIRTUES.length) % VIRTUES.length;
+  render(dir > 0 ? 'next' : 'prev');
+}
+
+function goTo(idx) {
+  if (idx === state.currentIndex) return;
+  const dir = idx > state.currentIndex ? 'next' : 'prev';
+  state.currentIndex = idx;
+  render(dir);
+}
+
+// ─── SWIPE ───
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    navigate(dx < 0 ? 1 : -1);
+  }
+}, { passive: true });
+
+// ─── KEYBOARD ───
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') navigate(1);
+  if (e.key === 'ArrowLeft') navigate(-1);
+});
+
+// ─── ADVISOR ───
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function handleAdvisorKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendAdvisorMessage();
+  }
+}
+
+function useSuggestion(el) {
+  const input = document.getElementById('advisorInput');
+  input.value = el.textContent;
+  autoResize(input);
+  input.focus();
+  // hide suggestions after use
+  document.getElementById('advisorSuggestions').style.display = 'none';
+}
+
+async function sendAdvisorMessage() {
+  const input = document.getElementById('advisorInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const btn = document.getElementById('advisorSendBtn');
+  btn.disabled = true;
+
+  // Hide empty state & suggestions
+  const empty = document.getElementById('advisorEmpty');
+  if (empty) empty.remove();
+  document.getElementById('advisorSuggestions').style.display = 'none';
+
+  // Add user message
+  appendUserMessage(text);
+  input.value = '';
+  input.style.height = 'auto';
+
+  // Show thinking
+  const thinkingEl = appendThinking();
+
+  // Build system prompt with all virtues
+  const virtuesSummary = VIRTUES.map(v =>
+    `${v.name} (${v.romaji} · ${v.kanji}): ${v.meaning}`
+  ).join('\n\n');
+
+  const systemPrompt = `Je bent een wijze samoerai adviseur, diep geworteld in de zeven deugden van Bushido. Je spreekt rustig, helder en poëtisch — maar altijd praktisch en eerlijk. Je antwoorden zijn warm maar zonder zwakheid, direct maar zonder hardheid.
+
+De zeven deugden die jij belichaamt:
+
+${virtuesSummary}
+
+Wanneer iemand je een vraag stelt over zijn dag, een dilemma, een uitdaging of een taak:
+1. Erken kort wat de persoon meemaakt (empathisch, niet overdreven)
+2. Bekijk de situatie door de lens van alle relevante deugden — noem ze bij naam (gebruik **Rechtvaardigheid**, **Moed**, etc. met **bold**)
+3. Geef concrete, heldere handelingsadviezen vanuit die deugden
+4. Sluit af met één korte, krachtige zin — als een samoerai spreuk
+
+Schrijf in vloeiend Nederlands. Geen opsommingstekens of headers — schrijf in doorlopende, meditatieve alinea's. Houd het beknopt maar diep: liever drie krachtige alinea's dan tien vlakke.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: text }]
+      })
+    });
+
+    const data = await response.json();
+    const reply = data.content?.map(b => b.text || '').join('') || 'De adviseur zwijgt. Probeer het opnieuw.';
+
+    thinkingEl.remove();
+    appendAIMessage(reply);
+  } catch (err) {
+    thinkingEl.remove();
+    appendAIMessage('De verbinding met de adviseur is verbroken. Controleer je verbinding en probeer opnieuw.');
+  }
+
+  btn.disabled = false;
+}
+
+function appendUserMessage(text) {
+  const el = document.createElement('div');
+  el.className = 'msg-user';
+  el.textContent = text;
+  document.getElementById('advisorMessages').appendChild(el);
+  scrollAdvisor();
+}
+
+function appendThinking() {
+  const el = document.createElement('div');
+  el.className = 'msg-thinking';
+  el.innerHTML = `<div class="thinking-dot"></div><div class="thinking-dot"></div><div class="thinking-dot"></div>`;
+  document.getElementById('advisorMessages').appendChild(el);
+  scrollAdvisor();
+  return el;
+}
+
+function appendAIMessage(text) {
+  // Convert **bold** to virtue tags, and split into paragraphs
+  const formatted = text
+    .split('\n\n')
+    .filter(p => p.trim())
+    .map(p => {
+      const withTags = p.replace(/\*\*([^*]+)\*\*/g, '<span class="virtue-tag">$1</span>');
+      return `<p>${withTags}</p>`;
+    })
+    .join('');
+
+  const el = document.createElement('div');
+  el.className = 'msg-ai';
+  el.innerHTML = `
+    <div class="msg-ai-label">Samoerai Adviseur</div>
+    <div class="msg-ai-body">${formatted}</div>
+  `;
+  document.getElementById('advisorMessages').appendChild(el);
+  scrollAdvisor();
+}
+
+function scrollAdvisor() {
+  const container = document.getElementById('advisorMessages');
+  setTimeout(() => {
+    container.scrollTop = container.scrollHeight;
+    container.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, 60);
+}
+
+// ─── INIT ───
+loadState();
+render(null);
+
+// ─── SERVICE WORKER ───
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.log('SW error:', err));
+  });
+}
+</script>
+</body>
+</html>
